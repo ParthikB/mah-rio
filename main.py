@@ -1,59 +1,76 @@
-# This file is used to generate random training_data.
+# configure 'config-feedforward' file
+# if game changed, don't forget to change the output layer node in the above file
 
 import retro
+import neat
 import cv2
 import numpy as np
-from handlers import *
-import os
-import time
-from statistics import mean
+# from handlers import *
+# import os
+# import time
+# from statistics import mean
 
 env = retro.make('SuperMarioBros-Nes')
 
-info(env)
-
-total_reward = 0
-training_data = []
-score_log = []
-
-runtime_start = time.time()
-
-for episode in range(EPISODES):
-    env.reset()
-    ep_score = 0
-    ep_start = time.time()
-    print("Episode no. : ", episode+1)
-    while True:
-        env.render() # Rendering every frame takes time. Comment it out to make the generation faster. 
+def eval_genomes(genomes, config):
+    for genome_id, genome in genomes:
+        state = env.reset()
         action = env.action_space.sample()
-        state, reward, done, info = env.step(action)
-        state = cv2.cvtColor(np.array(state), cv2.COLOR_BGR2GRAY)
-        state = cv2.resize(state, (120, 112))
+        width, height, channels = env.observation_space.shape
+        width = int(width/8)    # 28
+        height = int(height/8)  # 30
 
-        ep_score += reward
+        net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+        current_max_fitness = 0
+        current_fitness     = 0
+        frame               = 0
+        counter             = 0
+        xpos                = 0
+        xpos_max            = 0
+        done                = False
 
-        if reward > 0:
-            training_data.append([state, action])
+        while not done:
+            env.render()
+            frame += 1
 
-        if done:
-            print("Game over | Episode score : ", ep_score)
-            print(f"Runtime : {round(time.time() - ep_start, 2)} seconds.")
-            print("---------------------------------------")
-            break
+            state = cv2.resize(state, (width, height))
+            state = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
+            state = np.reshape(state, (height, width))
 
-        if cv2.waitKey(0) & 0xFF == ord("q"):
-            break
+            state = state.flatten()
 
-    score_log.append(ep_score)
+            nn_output = net.activate(state)
+            # print(nn_output)
 
-print("---------- Program Terminates ----------")
-print("Average Score        : ", round(mean(score_log), 2))
-os.chdir("C:/Users/ParthikB/PycharmProjects/retro/training_data")
-runtime_end = time.time()
-print(f"Generating Runtime  : {round(runtime_end - runtime_start, 2)} seconds.")
-np.save(DATA_NAME, training_data)
-print(f"Saving Runtime      : {round(time.time() - runtime_end, 2)} seconds.")
+            state, reward, done, info = env.step(nn_output)
+
+            xpos = info['xscrollLo']
+
+            if xpos > xpos_max:
+                current_fitness += 1
+                xpos_max = xpos
+
+            # print(xpos, xpos_max, current_fitness)
 
 
-env.close()
+            if current_fitness > current_max_fitness:
+                current_max_fitness = current_fitness
+                counter = 0
+            else:
+                counter += 1
 
+            if done or counter == 250:
+                done = True
+                print(genome_id, current_fitness)
+
+            genome.fitness = current_fitness
+
+
+config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                     neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                     'config-feedforward')
+
+
+pop = neat.Population(config)
+
+winner = pop.run(eval_genomes)

@@ -1,9 +1,9 @@
 # This file contains all the basic custom functions and PARAMETERS.
+
 import cv2
 
 ########### Parameters ##########
-EPISODES = 3
-DATA_NAME = f"v0.0_training_data_{EPISODES}ep"
+GITHUB_VER = 0.1
 #################################
 
 
