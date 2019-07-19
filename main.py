@@ -1,14 +1,12 @@
+# Points to remember if game is changed:
 # configure 'config-feedforward' file
-# if game changed, don't forget to change the output layer node in the above file
+# don't forget to change the output layer node in the above file depending upon the number of agent actions.
 
 import retro
 import neat
 import cv2
 import numpy as np
-# from handlers import *
-# import os
-# import time
-# from statistics import mean
+
 
 env = retro.make('SuperMarioBros-Nes')
 
@@ -49,9 +47,6 @@ def eval_genomes(genomes, config):
             if xpos > xpos_max:
                 current_fitness += 1
                 xpos_max = xpos
-
-            # print(xpos, xpos_max, current_fitness)
-
 
             if current_fitness > current_max_fitness:
                 current_max_fitness = current_fitness
