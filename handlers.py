@@ -24,3 +24,4 @@ def info(env):
     print("Action Space      : ", env.action_space)
     print("Observation Space : ", env.observation_space)
     print("--------------------------------------")
+    
