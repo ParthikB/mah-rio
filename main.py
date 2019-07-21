@@ -1,64 +1,22 @@
 # Points to remember if game is changed:
-# configure 'config-feedforward' file
-# don't forget to change the output layer node in the above file depending upon the number of agent actions.
+# -- Configure 'config-feedforward' file accordingly.
+# -- Don't forget to change the output layer node in the above file depending upon the number of agent actions.
 
 import retro
 import neat
-import cv2
 import numpy as np
+from handlers import *
+import os
+import pickle
 
+env = retro.make('SuperMarioBros-Nes', 'Level1-1.state')
 
-env = retro.make('SuperMarioBros-Nes')
-
-def eval_genomes(genomes, config):
-    for genome_id, genome in genomes:
-        state = env.reset()
-        action = env.action_space.sample()
-        width, height, channels = env.observation_space.shape
-        width = int(width/8)    # 28
-        height = int(height/8)  # 30
-
-        net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
-        current_max_fitness = 0
-        current_fitness     = 0
-        frame               = 0
-        counter             = 0
-        xpos                = 0
-        xpos_max            = 0
-        done                = False
-
-        while not done:
-            env.render()
-            frame += 1
-
-            state = cv2.resize(state, (width, height))
-            state = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
-            state = np.reshape(state, (height, width))
-
-            state = state.flatten()
-
-            nn_output = net.activate(state)
-            # print(nn_output)
-
-            state, reward, done, info = env.step(nn_output)
-
-            xpos = info['xscrollLo']
-
-            if xpos > xpos_max:
-                current_fitness += 1
-                xpos_max = xpos
-
-            if current_fitness > current_max_fitness:
-                current_max_fitness = current_fitness
-                counter = 0
-            else:
-                counter += 1
-
-            if done or counter == 250:
-                done = True
-                print(genome_id, current_fitness)
-
-            genome.fitness = current_fitness
+if os.path.isfile("best_fitness_log.npy"):
+    print("Existing fitness log found. Loading...!")
+    best_fitness_log = list(np.load("best_fitness_log.npy"))
+else:
+    print("No existing fitness log found. Creating new...!")
+    best_fitness_log = []
 
 
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -66,6 +24,22 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      'config-feedforward')
 
 
-pop = neat.Population(config)
+if __name__ == '__main__':  # If the module is run directly and not imported, then the following will run.
 
-winner = pop.run(eval_genomes)
+    pop = population_loader()
+    pop.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    pop.add_reporter(stats)
+
+    # Now we will check if the current Version's Checkpoint folder is available. If not, directory will be created.
+    # Thus, checkpoints will be saved in that directory.
+    if not os.path.isdir(f"C:/Users/ParthikB/PycharmProjects/retro/checkpoint/v{VERSION}"):
+        os.mkdir(f"C:/Users/ParthikB/PycharmProjects/retro/checkpoint/v{VERSION}")
+
+    os.chdir(f"C:/Users/ParthikB/PycharmProjects/retro/checkpoint/v{VERSION}")
+    pop.add_reporter(neat.Checkpointer(10))
+
+    winner = pop.run(eval_genomes)
+
+    with open('winner.pkl', 'wb') as output:
+        pickle.dump(winner, output, 1)
