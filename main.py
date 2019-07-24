@@ -79,8 +79,8 @@ def eval_genomes(genomes, config):
         else:
             times_reached_max_fitness = 0
 
-        print(f"----Member {member}---- Fitness Log updated || Mean Fitness Score : {generation_mean_fitness} "
-              f"|| Max Fitness Score  : {generation_max_fitness} || Times Max Fitness Reached : {times_reached_max_fitness}" )
+        print(f"""----Member {member}---- Fitness Log updated || Current Fitness Score : {current_fitness}      || Times Max Fitness Reached : {times_reached_max_fitness}
+                                      || Gen Max Fitness Score : {generation_max_fitness}      || Gen Mean Fitness Score    : {generation_mean_fitness}""" )
 
 
     generation_info.append([generation_mean_fitness, generation_max_fitness, times_reached_max_fitness])
@@ -95,10 +95,10 @@ def population_loader():
         time.sleep(2)
         pop = neat.Population(config)  # Use this to start afresh.
     elif choice == 'y':
-        version    = float(input("-------Enter the model version     : "))
-        checkpoint = int(input("-------Enter the checkpoint number : "))
+        version    = float(input(" -------Enter the model version     : "))
+        checkpoint = int(input(" -------Enter the checkpoint number : "))
         try:
-            os.chdir(f"C:/Users/ParthikB/PycharmProjects/retro/checkpoint/v{version}")
+            os.chdir(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{version}")
             print(f"Loading Checkpoint {checkpoint} from model v{version} ...//")
             pop = neat.Checkpointer.restore_checkpoint(f"neat-checkpoint-{checkpoint}")
             print(f"Population at Checkpoint {checkpoint} loaded...//")
@@ -111,7 +111,8 @@ def population_loader():
 
     return pop
 
-
+print(f"Version {VERSION} loaded.")
+print()
 if os.path.isfile(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{VERSION}/fitness_log.npy"):
     print("Existing fitness log found. Loading...//")
     generation_info = list(np.load(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{VERSION}/fitness_log.npy"))
@@ -127,7 +128,7 @@ else:
 
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                     'config-feedforward')
+                     'v3.0.1config-feedforward')
 
 pop = population_loader()
 pop.add_reporter(neat.StdOutReporter(True))
