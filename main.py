@@ -1,3 +1,4 @@
+
 import retro
 import neat
 import cv2
@@ -44,6 +45,7 @@ def eval_genomes(genomes, config):
 
             state, reward, done, info = env.step(action)
 
+            # print(info)
             level_end = info['levelHi']
 
             current_fitness += reward
@@ -94,7 +96,7 @@ def population_loader():
         time.sleep(2)
         pop = neat.Population(config)  # Use this to start afresh.
     elif choice == 'y':
-        version    = float(input(" -------Enter the model version     : "))
+        version    = input(" -------Enter the model version     : ")
         checkpoint = int(input(" -------Enter the checkpoint number : "))
         try:
             os.chdir(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{version}")
@@ -124,10 +126,9 @@ else:
     print("Created.")
 
 
-
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                     'v3.0.1config-feedforward')
+                     'config-feedforward')
 
 pop = population_loader()
 pop.add_reporter(neat.StdOutReporter(True))
@@ -138,9 +139,11 @@ if not os.path.isdir(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{VERS
     os.mkdir(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{VERSION}")
 
 os.chdir(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{VERSION}")
-pop.add_reporter(neat.Checkpointer(5))
+pop.add_reporter(neat.Checkpointer(10))
 
 winner = pop.run(eval_genomes)
 
 with open('winner.pkl', 'wb') as output:
     pickle.dump(winner, output, 1)
+
+
