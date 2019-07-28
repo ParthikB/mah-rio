@@ -1,6 +1,6 @@
 import numpy as np
 
-VERSION = '3.0.1'
+VERSION = '4.0'
 
 def info(env):
     print("------- Environment Parameters -------")
