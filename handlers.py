@@ -32,4 +32,3 @@ def data_loader(division=1):
 
 if __name__ == '__main__':
     max, mean, gen, rep = data_loader(25)
-
