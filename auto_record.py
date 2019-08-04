@@ -24,7 +24,7 @@ for gen in range(50):
     print("mario")
 
     py.hotkey('win', 'g')
-    time.sleep(1)
+    time.sleep(3)
     print("gamebar")
 
     py.click(226, 140)
@@ -40,6 +40,7 @@ for gen in range(50):
     py.click(1826, 164)
     print("Recorded!")
 
+    py.click(1033, 337)
+
     countdown(min=60)
 
-    py.click(1033, 337)

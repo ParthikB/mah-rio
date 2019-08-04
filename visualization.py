@@ -31,7 +31,8 @@ def plot(prediction=True, generations=50):
     ax1.set_xlabel("Generations")
     ax1.set_ylabel("Times it reached Max Fitness")
     ax1.yaxis.label.set_color((0.25, 0.5, 0, 1))
-    ax1.bar(gen, rep, color='#408000', alpha=0.5, width=1)
+    ax1.plot(gen, rep, color='#408000', alpha=0.3)
+    ax1.fill_between(gen, 0, rep, facecolor='#408000', alpha=0.15)
     ax1.tick_params(axis='y')
 
     ax_fitness.grid()
@@ -56,8 +57,10 @@ def plot(prediction=True, generations=50):
     fig.tight_layout()
     plt.show()
 
+##########################################################################
 
-max, mean, gen, rep = data_loader()
 
-plot(prediction=False, generations=50)
+max, mean, gen, rep = data_loader(division=25)
+
+plot(prediction=False, generations=100)
 

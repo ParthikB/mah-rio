@@ -144,5 +144,3 @@ winner = pop.run(eval_genomes)
 
 with open('winner.pkl', 'wb') as output:
     pickle.dump(winner, output, 1)
-
-
