@@ -8,7 +8,7 @@ import pickle
 from statistics import mean
 from handlers import *
 
-env = retro.make("SuperMarioBros-Nes")
+env = retro.make("SonicTheHedgehog3-Genesis")
 info(env)
 
 
@@ -31,6 +31,7 @@ def eval_genomes(genomes, config):
         generation_max_fitness = 0
         counter = 0
         member += 1
+        prev_x = 5000
 
         while not done:
             env.render()
@@ -41,19 +42,12 @@ def eval_genomes(genomes, config):
 
             state_arr = np.ndarray.flatten(state)
             action = net.activate(state_arr)
-
             state, reward, done, info = env.step(action)
 
-            # print(info)
-            level_end = info['levelHi']
+            current_fitness += info['x'] - prev_x
 
-            current_fitness += reward
 
-            if level_end >= 1:
-                current_fitness += 100000
-                done = True
-                times_level_finished += 1
-                print("Vohoooo.....Level Completed...!!")
+            prev_x = info['x']
 
             if current_fitness > generation_max_fitness:
                 generation_max_fitness = current_fitness
@@ -61,11 +55,24 @@ def eval_genomes(genomes, config):
             else:
                 counter += 1
 
-            if counter >= 250:
+            if current_fitness >= 50000:
+                current_fitness += 200000
+                done = True
+                times_level_finished += 1
+                print("Vohoooo.....Level Completed...!!")
+            elif current_fitness < 0:
+                current_fitness = 0
+
+            time = 250 if current_fitness == generation_max_fitness else 500
+
+            # print(time, counter, current_fitness, generation_max_fitness)
+
+
+            if counter >= time:
                 done = True
 
             if times_level_finished >= 10:
-                current_fitness += 1000000
+                current_fitness += 10000000
 
             genome.fitness = current_fitness
 
@@ -95,7 +102,8 @@ def population_loader():
         time.sleep(2)
         pop = neat.Population(config)  # Use this to start afresh.
     elif choice == 'y':
-        version    = input(" -------Enter the model version     : ")
+        # version    = input(" -------Enter the model version     : ")
+        version    = VERSION
         checkpoint = int(input(" -------Enter the checkpoint number : "))
         try:
             os.chdir(f"C:/Users/ParthikB/PycharmProjects/mario/checkpoint/v{version}")
